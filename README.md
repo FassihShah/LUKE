@@ -22,9 +22,7 @@ The engineering spans the full information lifecycle: discover official document
 - [Local development](#local-development)
 - [Docker and Render deployment](#docker-and-render-deployment)
 - [Operations and troubleshooting](#operations-and-troubleshooting)
-- [Implementation boundaries](#implementation-boundaries)
 - [Repository map](#repository-map)
-- [Portfolio walkthrough](#portfolio-walkthrough)
 
 ## Capabilities
 
@@ -720,32 +718,6 @@ The root route is a basic liveness response with legacy local-symlink checks. It
 
 Logging is primarily `print()` and tracebacks, exposed through container stdout/stderr. There is no dedicated metrics dashboard, tracing configuration, benchmark suite, or automated test suite in the repository. Several functions catch errors and return empty data; the top-level scheduler also catches failures without re-raising, so successful process exit alone is not evidence that every stage succeeded.
 
-## Implementation boundaries
-
-The supplied brief describes ten flows and stronger acceptance criteria than this repository currently enforces. This section preserves that distinction for reviewers and maintainers.
-
-| Area | Current boundary |
-| --- | --- |
-| Flow 1 evidence guarantees | Prompt-based grounding and basic quote checks exist; per-claim citation enforcement, legal cross-checking, and verified official PDF resolution do not |
-| Current-law handling | Query rendering recognizes current/original chunk labels, but the active chunker emits `structural` and `structural_modification`; it does not establish a complete authoritative current-version model |
-| Flow 2 summary | Processor return tuple is not unpacked; intended truncation and quality propagation are not correctly applied |
-| Flow 5 alerts | Remote change writer/local reader mismatch; no persisted watchlist subscriptions or automatic client push loop |
-| Flow 7 approval | Sending is opt-in, but `lawyer_approved` defaults to true and is a caller-controlled boolean |
-| Flow 8 uploads/calendar | Research routing does not use passed upload content; final-product ICS call needs correct instance wiring |
-| Flow 9 workspace search | Request-local PDF search, not a persistent tenant/workspace file index; no hosted source viewer/highlighting |
-| Flow 10 train and monitor | No admin teaching/review endpoints, approval annotations, weekly evaluation sets, metrics dashboard, or automated rollback workflow |
-| Frontend expectations | No frontend source, expert/client style toggle, asynchronous result polling, or webhook integration is included |
-
-Additional engineering constraints visible in the source:
-
-- **Snapshot integrity:** Rotation is non-atomic, does not clear stale latest objects, and can clean staging after caught errors. Only latest/previous snapshots are managed; there is no implemented transactional rollback.
-- **Incremental index consistency:** Removed articles/files are not purged. Chunk IDs omit subject, so identical filenames and article/page positions in different subjects can collide. Persisted embeddings increase JSON download size and API memory use.
-- **Collection completeness:** Depth and icon limits, page-based deduplication, and unpaginated subject-list calls limit what can be inferred from a “completed” crawl. A missing document in a partial scrape does not prove legal repeal/removal.
-- **Source precision:** Citation excerpts can be truncated and cleaned; generated links are based on filenames, not a persisted canonical PDF URL map. Document-analysis page numbers generally depend on LLM inference over flattened text.
-- **Access control:** No JWT/API-key authentication or tenant isolation is implemented. Email headers are user-supplied identifiers. Fetch/delete filter by session and email, while chat continuation accepts session ID without an ownership header. CORS currently allows all origins, methods, and headers with credentials enabled.
-- **Concurrency and resources:** No request queue, upload-size limits, token-budget manager, or concurrency limiter is defined. Blocking work can occupy the API event loop; ingestion uses all reported CPU cores. Multiple concurrent batch runs have no shared locking.
-
-These are source-review findings, not claims about changes that may exist outside this checkout. They also provide concrete follow-up work for strengthening a public demonstration or deployment.
 
 ## Repository map
 
